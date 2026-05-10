@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Войти — FilmLib{% endblock %}
+{% block content %}
+<div class="auth-box">
+    <h2>Вход в аккаунт</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Имя пользователя</label>
+            <input type="text" name="username" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" name="remember" class="form-check-input" id="rem">
+            <label class="form-check-label" for="rem" style="font-size:.88rem; color: var(--text-muted); text-transform:none;">Запомнить меня</label>
+        </div>
+        <button class="btn btn-black w-100 py-2">Войти</button>
+    </form>
+    <div style="text-align:center; margin-top:18px; color: var(--text-muted); font-size:.88rem;">
+        Нет аккаунта? <a href="{{ url_for('register') }}" style="color: var(--text-main); font-weight:700;">Зарегистрируйтесь</a>
+    </div>
+</div>
+{% endblock %}

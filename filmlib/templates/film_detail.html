@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}{{ film.title }} — FilmLib{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+    <!-- Постер -->
+    <div class="col-md-3 col-sm-4">
+        {% if film.poster and film.poster != 'default_poster.jpg' %}
+        <img src="{{ url_for('static', filename='uploads/' + film.poster) }}"
+             alt="{{ film.title }}" class="detail-poster w-100">
+        {% else %}
+        <div class="detail-noposter">&#127916;</div>
+        {% endif %}
+    </div>
+
+    <!-- Инфо -->
+    <div class="col-md-9 col-sm-8">
+        <h1 style="font-weight:800; font-size:1.6rem; margin-bottom:6px; color: var(--text-main);">{{ film.title }}</h1>
+
+        <div style="color: var(--text-muted); font-size:.9rem; margin-bottom:12px;">
+            {{ film.year }}
+            {% if film.genre %}&nbsp;&bull;&nbsp;<span class="genre-tag" style="background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ film.genre.name }}</span>{% endif %}
+            {% if film.director %}&nbsp;&bull;&nbsp;&#127909; {{ film.director }}{% endif %}
+        </div>
+
+        {% if avg %}
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rating-badge" style="background: #ffcc00; color: #000; padding: 4px 12px; border-radius: 6px; font-weight: 800;">&#9733; {{ avg }}</div>
+            <span style="color: var(--text-muted); font-size:.88rem;">из 10 &bull; {{ film.reviews.count() }} отзыв(ов)</span>
+        </div>
+        {% else %}
+        <div style="color: var(--text-muted); margin-bottom:12px;">Оценок пока нет</div>
+        {% endif %}
+
+        {% if film.description %}
+        <p style="color: var(--text-main); line-height:1.7; font-size:.95rem; max-width:600px; opacity: 0.9;">{{ film.description }}</p>
+        {% endif %}
+
+        <div style="color: var(--text-muted); font-size:.82rem; margin-top:10px;">
+            Добавил: <strong style="color: var(--text-main);">{{ film.author.username }}</strong>
+        </div>
+
+        {% if current_user.is_authenticated and (current_user.id == film.user_id or current_user.is_admin) %}
+        <div class="d-flex gap-2 mt-3">
+            <a href="{{ url_for('edit_film', film_id=film.id) }}" class="btn btn-yellow btn-sm px-3">Редактировать</a>
+            <form method="post" action="{{ url_for('delete_film', film_id=film.id) }}"
+                  onsubmit="return confirm('Удалить фильм?')">
+                <button class="btn btn-sm btn-outline-danger">Удалить</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<hr style="border-color:#e8e8e8;margin:28px 0;">
+
+<!-- Форма отзыва -->
+{% if current_user.is_authenticated %}
+    {% if not user_review %}
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);">
+        <div class="section-head">Оставить отзыв</div>
+        <form method="post" action="{{ url_for('add_review', film_id=film.id) }}">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2 col-sm-3">
+                    <label class="form-label">Оценка (1–10)</label>
+                    <input type="number" name="rating" min="1" max="10" class="form-control" required>
+                </div>
+                <div class="col-md-8 col-sm-6">
+                    <label class="form-label">Комментарий</label>
+                    <input type="text" name="text" class="form-control" placeholder="Ваши впечатления...">
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <button class="btn btn-yellow w-100">Отправить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="alert alert-warning mb-4">Вы уже оценили: <strong>{{ user_review.rating }}/10</strong></div>
+    {% endif %}
+{% else %}
+<p style="color:#888;margin-bottom:20px;"><a href="{{ url_for('login') }}">Войдите</a>, чтобы оставить отзыв.</p>
+{% endif %}
+
+<!-- Отзывы -->
+<div class="section-head">Отзывы ({{ reviews|length }})</div>
+{% for r in reviews %}
+<div class="review-box" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <strong style="font-size:.92rem; color: var(--text-main);">{{ r.author.username }}</strong>
+        <span class="review-score" style="color: #ffcc00; font-weight: 700;">&#9733; {{ r.rating }}/10</span>
+    </div>
+    {% if r.text %}<p style="margin:4px 0 0; font-size:.9rem; color: var(--text-main); opacity: 0.9;">{{ r.text }}</p>{% endif %}
+    <small style="color: var(--text-muted);">{{ r.created_at.strftime('%d.%m.%Y') }}</small>
+</div>
+{% else %}
+<p style="color:#aaa;">Отзывов пока нет — будьте первым!</p>
+{% endfor %}
+
+{% endblock %}

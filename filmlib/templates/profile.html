@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — FilmLib{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- ПРОФИЛЬ --- */
+    .profile-header {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        margin-bottom: 40px;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 20px;
+        cursor: pointer;
+    }
+    .avatar-circle {
+        width: 140px;
+        height: 140px;
+        background: #ffcc00;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 4rem;
+        color: #000;
+        overflow: hidden;
+        border: 5px solid #ffcc00;
+        transition: 0.3s ease;
+        box-shadow: 0 8px 25px rgba(255, 204, 0, 0.3);
+    }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-hover {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        border-radius: 50%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: #fff; font-size: 0.8rem; font-weight: 800;
+        opacity: 0; transition: 0.3s; text-transform: uppercase;
+    }
+    .avatar-wrapper:hover .avatar-hover { opacity: 1; }
+    .avatar-wrapper:hover .avatar-circle { transform: scale(1.02); }
+
+    .user-name { font-weight: 900; font-size: 1.8rem; margin-bottom: 5px; color: var(--text-main) !important; }
+    .user-email { color: var(--text-muted) !important; font-size: 1rem; margin-bottom: 25px; }
+
+    .stats-container { display: flex; justify-content: center; gap: 30px; }
+    .stat-card {
+        background: var(--bg-body);
+        padding: 15px 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    .stat-val { font-weight: 900; font-size: 1.5rem; color: #ffcc00; display: block; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted) !important; font-weight: 700; letter-spacing: 1px; }
+
+    /* --- СПИСКИ --- */
+    .mini-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 12px;
+        transition: 0.2s;
+        box-shadow: var(--shadow);
+    }
+    .mini-card:hover { border-color: #ffcc00; transform: translateX(5px); }
+    .mini-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #333; }
+    .mini-info { flex: 1; min-width: 0; }
+    .mini-title { font-weight: 800; font-size: 1rem; color: var(--text-main) !important; text-decoration: none; display: block; }
+    .mini-meta { color: var(--text-muted) !important; font-size: 0.85rem; }
+
+    .review-item {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow);
+    }
+    .review-text { color: var(--text-main) !important; font-size: 0.95rem; margin: 10px 0; line-height: 1.5; }
+    .review-date { color: var(--text-muted) !important; font-size: 0.8rem; }
+    .score-badge { background: #ffcc00; color: #000; font-weight: 900; padding: 4px 12px; border-radius: 6px; font-size: 0.9rem; }
+
+    .hidden-file { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="profile-header">
+            <form action="{{ url_for('upload_avatar') }}" method="post" enctype="multipart/form-data" id="avatarForm">
+                <div class="avatar-wrapper" onclick="document.getElementById('avatarInput').click();">
+                    <div class="avatar-circle">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" alt="Avatar">
+                        {% else %}
+                            {{ current_user.username[0].upper() }}
+                        {% endif %}
+                    </div>
+                    <div class="avatar-hover">
+                        <span>📷</span>
+                        <span>Изменить</span>
+                    </div>
+                    <input type="file" name="avatar" id="avatarInput" class="hidden-file" onchange="document.getElementById('avatarForm').submit();" accept="image/*">
+                </div>
+            </form>
+            <h1 class="user-name">{{ current_user.username }}</h1>
+            <p class="user-email">{{ current_user.email }}</p>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-val">{{ films|length }}</span>
+                    <span class="stat-label">Фильмов</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val">{{ reviews|length }}</span>
+                    <span class="stat-label">Отзывов</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="section-title">Мои фильмы</h2>
+                {% if films %}
+                    {% for film in films %}
+                    <div class="mini-card">
+                        {% if film.poster and film.poster != 'default_poster.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/' + film.poster) }}" class="mini-img">
+                        {% else %}
+                            <div class="mini-img d-flex align-items-center justify-content-center" style="font-size: 1.5rem;">🎬</div>
+                        {% endif %}
+                        <div class="mini-info">
+                            <a href="{{ url_for('film_detail', film_id=film.id) }}" class="mini-title text-truncate">{{ film.title }}</a>
+                            <span class="mini-meta">{{ film.year }} • {{ film.genre.name if film.genre else 'Кино' }}</span>
+                        </div>
+                        <a href="{{ url_for('edit_film', film_id=film.id) }}" class="btn btn-sm btn-link text-muted">⚙️</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Вы ещё не добавили фильмов. <a href="{{ url_for('add_film') }}">Добавить сейчас?</a></p>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="section-title">Мои отзывы</h2>
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="review-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('film_detail', film_id=review.film_id) }}" class="mini-title">{{ review.film.title }}</a>
+                            <span class="score-badge">★ {{ review.rating }}</span>
+                        </div>
+                        <p class="review-text">{{ review.text }}</p>
+                        <div class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Отзывов пока нет.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

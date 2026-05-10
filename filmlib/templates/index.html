@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}FilmLib — Каталог фильмов{% endblock %}
+{% block content %}
+
+<!-- Поиск и фильтр -->
+<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 25px; box-shadow: var(--shadow);">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+        <input type="text" name="q" class="form-control" placeholder="Поиск по названию..."
+               value="{{ query }}" style="flex: 1; min-width: 200px; height: 45px;">
+        <select name="genre" class="form-select" style="max-width: 180px; height: 45px;">
+            <option value="">Все жанры</option>
+            {% for g in genres %}
+            <option value="{{ g.id }}" {% if genre_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-yellow px-4" type="submit" style="height: 45px;">Найти</button>
+        {% if query or genre_id %}
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" style="height: 45px;">Сбросить</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Заголовок -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="section-head mb-0">
+        {% if query %}Поиск: «{{ query }}»
+        {% elif genre_id %}Фильмы по жанру
+        {% else %}Все фильмы{% endif %}
+    </div>
+    <span style="color: var(--text-muted); font-size: 0.85rem;">{{ pagination.total }} фильм(ов)</span>
+</div>
+
+<!-- Сетка фильмов -->
+{% if films %}
+<div class="row g-3 mb-4">
+    {% for film in films %}
+    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{{ url_for('film_detail', film_id=film.id) }}" class="card-film">
+            {% if film.poster and film.poster != 'default_poster.jpg' %}
+            <img src="{{ url_for('static', filename='uploads/' + film.poster) }}"
+                 alt="{{ film.title }}" class="card-film-poster">
+            {% else %}
+            <div class="card-film-noposter">&#127916;</div>
+            {% endif %}
+            <div class="card-film-body">
+                <div class="card-film-title">{{ film.title }}</div>
+                <div class="card-film-meta">
+                    {{ film.year }}{% if film.genre %} &bull; {{ film.genre.name }}{% endif %}
+                </div>
+                <div class="mt-auto">
+                    {% if film.average_rating() %}
+                    <span class="film-star">&#9733;</span>
+                    <span class="film-rating-val">{{ film.average_rating() }}</span>
+                    <span style="color: var(--text-muted); font-size: 0.78rem;">/10</span>
+                    {% else %}
+                    <span style="color: var(--text-muted); font-size: 0.78rem;">Нет оценок</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+{% if pagination.pages > 1 %}
+<nav>
+    <ul class="pagination pagination-sm justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', page=pagination.prev_num, q=query, genre=genre_id) }}">&laquo;</a>
+        </li>
+        {% endif %}
+        {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if p %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('index', page=p, q=query, genre=genre_id) }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', page=pagination.next_num, q=query, genre=genre_id) }}">&raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div style="text-align:center;padding:60px 0;color:#aaa;">
+    <div style="font-size:3rem;margin-bottom:12px;">&#127916;</div>
+    <div style="font-size:1rem;font-weight:600;">Ничего не найдено</div>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('add_film') }}" class="btn btn-yellow mt-3">Добавить фильм</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

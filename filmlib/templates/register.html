@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация — FilmLib{% endblock %}
+{% block content %}
+<div class="auth-box">
+    <h2>Регистрация</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Имя пользователя</label>
+            <input type="text" name="username" class="form-control" required autofocus maxlength="64">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required maxlength="120">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Повторите пароль</label>
+            <input type="password" name="confirm" class="form-control" required>
+        </div>
+        <button class="btn btn-black w-100 py-2">Создать аккаунт</button>
+    </form>
+    <div style="text-align:center; margin-top:18px; color: var(--text-muted); font-size:.88rem;">
+        Уже есть аккаунт? <a href="{{ url_for('login') }}" style="color: var(--text-main); font-weight:700;">Войти</a>
+    </div>
+</div>
+{% endblock %}

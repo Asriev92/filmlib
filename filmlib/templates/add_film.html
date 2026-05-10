@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Добавить фильм — FilmLib{% endblock %}
+{% block content %}
+<div style="max-width:680px;">
+    <div class="section-head">Добавить фильм</div>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:24px;">
+        <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Название *</label>
+                <input type="text" name="title" class="form-control" required maxlength="200" placeholder="Например: Интерстеллар">
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-5">
+                    <label class="form-label">Год *</label>
+                    <input type="number" name="year" class="form-control" min="1888" max="2030" required placeholder="2024">
+                </div>
+                <div class="col-7">
+                    <label class="form-label">Режиссёр</label>
+                    <input type="text" name="director" class="form-control" maxlength="150">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Жанр</label>
+                <select name="genre_id" class="form-select">
+                    <option value="">— Не указан —</option>
+                    {% for g in genres %}
+                    <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Описание</label>
+                <textarea name="description" class="form-control" rows="4" maxlength="2000"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Постер (jpg/png, до 16 МБ)</label>
+                <input type="file" name="poster" class="form-control" accept="image/*">
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-yellow px-4">Добавить</button>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
